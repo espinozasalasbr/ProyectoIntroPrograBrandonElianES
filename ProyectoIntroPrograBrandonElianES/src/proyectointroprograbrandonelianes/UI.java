@@ -3,8 +3,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package proyectointroprograbrandonelianes;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
 /**
  *
  * @author espin
@@ -20,25 +24,25 @@ public class UI extends JFrame {
     public UI() {
         gestor = new GestorMundial();
 
-        setTitle("Copa Mundial Java - SC-202");
+        setTitle("Copa Mundial Java");
         setSize(800, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         JTabbedPane pestañas = new JTabbedPane();
-        pestañas.addTab("MÓDULO 1: Configuración & Edición", crearPanelModulo1());
-        pestañas.addTab("MÓDULO 2: Sorteo", crearPanelModulo2());
-        pestañas.addTab("MÓDULO 4: Partidos", crearPanelModulo4());
-        pestañas.addTab("MÓDULO 5: Llaves", crearPanelModulo5());
-        pestañas.addTab("MÓDULO 6: Reportes", crearPanelModulo6());
+        pestañas.addTab("Configuración & Edición", ConfiguracionInicial());
+        pestañas.addTab("Sorteo", GeneradorSorteo());
+        pestañas.addTab("Partidos", GeneradorPartidos());
+        pestañas.addTab("Llaves", GeneradorClasificados());
+        pestañas.addTab("Reportes", ReporteFinal());
 
         add(pestañas);
     }
 
-    private JPanel crearPanelModulo1() {
+    private JPanel ConfiguracionInicial() {
         JPanel panel = new JPanel(null);
 
-        JLabel lblTamano = new JLabel("1. Tamaño del Torneo:");
+        JLabel lblTamano = new JLabel("Tamaño del Torneo:");
         lblTamano.setBounds(20, 15, 180, 25);
         panel.add(lblTamano);
 
@@ -51,7 +55,7 @@ public class UI extends JFrame {
         btnAplicar.setBounds(280, 15, 180, 25);
         panel.add(btnAplicar);
 
-        JButton btnDemo = new JButton("2. Cargar Datos Demo");
+        JButton btnDemo = new JButton("Cargar Equipos Demo");
         btnDemo.setBounds(20, 50, 440, 30);
         panel.add(btnDemo);
 
@@ -85,40 +89,51 @@ public class UI extends JFrame {
         btnGuardarEquipo.setBounds(20, 250, 360, 30);
         panel.add(btnGuardarEquipo);
 
-        btnAplicar.addActionListener(e -> {
-            int size = (int) comboTamanos.getSelectedItem();
-            gestor.configurarTamano(size);
-            comboIndiceEquipo.removeAllItems();
-            for (int i = 0; i < size; i++) comboIndiceEquipo.addItem(i);
-            JOptionPane.showMessageDialog(this, "Torneo dimensionado para " + size + " equipos.");
+        btnAplicar.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int tamanoElegido = (int) comboTamanos.getSelectedItem();
+                gestor.configurarTamano(tamanoElegido);
+                comboIndiceEquipo.removeAllItems();
+                for (int i = 0; i < tamanoElegido; i++) {
+                    comboIndiceEquipo.addItem(i);
+                }
+                JOptionPane.showMessageDialog(UI.this, "Torneo dimensionado para " + tamanoElegido + " equipos.");
+            }
         });
 
-        btnDemo.addActionListener(e -> {
-            if (!gestor.isConfigurado()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe configurar el tamaño primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnDemo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isConfigurado()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe configurar el tamaño primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                gestor.genDemo();
+                JOptionPane.showMessageDialog(UI.this, "Equipos de demostración cargados en memoria.");
             }
-            gestor.genDemo();
-            JOptionPane.showMessageDialog(this, "Datos de demostración cargados en memoria.");
         });
 
-        btnGuardarEquipo.addActionListener(e -> {
-            if (!gestor.isConfigurado() || comboIndiceEquipo.getSelectedItem() == null) {
-                JOptionPane.showMessageDialog(this, "Error: Configure el torneo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnGuardarEquipo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isConfigurado() || comboIndiceEquipo.getSelectedItem() == null) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Configure el torneo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                int ind = (int) comboIndiceEquipo.getSelectedItem();
+                String pais = txtPais.getText().trim();
+                String directorTecnico = txtDT.getText().trim();
+                if (!pais.isEmpty()) gestor.getEquipos()[ind].setSeleccion(pais);
+                if (!directorTecnico.isEmpty()) gestor.getEquipos()[ind].setDirectorTecnico(directorTecnico);
+                JOptionPane.showMessageDialog(UI.this, "Entidad [" + ind + "] actualizada.");
             }
-            int idx = (int) comboIndiceEquipo.getSelectedItem();
-            String p = txtPais.getText().trim();
-            String dt = txtDT.getText().trim();
-            if (!p.isEmpty()) gestor.getEquipos()[idx].setSeleccion(p);
-            if (!dt.isEmpty()) gestor.getEquipos()[idx].setDirectorTecnico(dt);
-            JOptionPane.showMessageDialog(this, "Entidad [" + idx + "] actualizada.");
         });
 
         return panel;
     }
 
-    private JPanel crearPanelModulo2() {
+    private JPanel GeneradorSorteo() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnSorteo = new JButton("Realizar Sorteo Aleatorio de Grupos");
         txtAreaGrupos = new JTextArea();
@@ -126,20 +141,23 @@ public class UI extends JFrame {
         panel.add(btnSorteo, BorderLayout.NORTH);
         panel.add(new JScrollPane(txtAreaGrupos), BorderLayout.CENTER);
 
-        btnSorteo.addActionListener(e -> {
-            if (!gestor.isConfigurado()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe configurar el Módulo 1 primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnSorteo.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isConfigurado()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar la configuracion inicial primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                gestor.genSorteo();
+                actualizarTablasGrupos();
+                JOptionPane.showMessageDialog(UI.this, "Sorteo completado con éxito.");
             }
-            gestor.genSorteo();
-            actualizarTablasGrupos();
-            JOptionPane.showMessageDialog(this, "Sorteo completado con éxito.");
         });
 
         return panel;
     }
 
-    private JPanel crearPanelModulo4() {
+    private JPanel GeneradorPartidos() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel pnlBotones = new JPanel();
         JButton btnUnPartido = new JButton("Simular Un Partido");
@@ -153,31 +171,37 @@ public class UI extends JFrame {
         panel.add(pnlBotones, BorderLayout.NORTH);
         panel.add(new JScrollPane(txtAreaPartidos), BorderLayout.CENTER);
 
-        btnUnPartido.addActionListener(e -> {
-            if (!gestor.isSorteoRealizado()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe realizar el sorteo en el Módulo 2 primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnUnPartido.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isSorteoRealizado()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar el sorteo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String log = gestor.simuladorPartido();
+                txtAreaPartidos.append(log + "\n");
+                actualizarTablasGrupos();
             }
-            String log = gestor.simuladorPartido();
-            txtAreaPartidos.append(log + "\n");
-            actualizarTablasGrupos();
         });
 
-        btnTodaFase.addActionListener(e -> {
-            if (!gestor.isSorteoRealizado()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe realizar el sorteo en el Módulo 2 primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnTodaFase.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isSorteoRealizado()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar el sorteo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String logCompleto = gestor.simuladorFaseCompleta();
+                txtAreaPartidos.setText(logCompleto);
+                actualizarTablasGrupos();
+                JOptionPane.showMessageDialog(UI.this, "Fase de grupos completamente simulada.");
             }
-            String logCompleto = gestor.simuladorFaseCompleta();
-            txtAreaPartidos.setText(logCompleto);
-            actualizarTablasGrupos();
-            JOptionPane.showMessageDialog(this, "Fase de grupos completamente simulada.");
         });
 
         return panel;
     }
 
-    private JPanel crearPanelModulo5() {
+    private JPanel GeneradorClasificados() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnLlaves = new JButton("Calcular Clasificados y Simular Llaves");
         txtAreaLlaves = new JTextArea();
@@ -186,19 +210,22 @@ public class UI extends JFrame {
         panel.add(btnLlaves, BorderLayout.NORTH);
         panel.add(new JScrollPane(txtAreaLlaves), BorderLayout.CENTER);
 
-        btnLlaves.addActionListener(e -> {
-            if (!gestor.isFaseGruposCompletada()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe completar la simulación de la Fase de Grupos primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnLlaves.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isFaseGruposCompletada()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe completar la simulación de la Fase de Grupos primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String res = gestor.genClasificadosYLlaves();
+                txtAreaLlaves.setText(res);
             }
-            String res = gestor.genClasificadosYLlaves();
-            txtAreaLlaves.setText(res);
         });
 
         return panel;
     }
 
-    private JPanel crearPanelModulo6() {
+    private JPanel ReporteFinal() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnReporte = new JButton("Generar Resumen Global y Estadísticas Finales");
         txtAreaReporte = new JTextArea();
@@ -207,34 +234,45 @@ public class UI extends JFrame {
         panel.add(btnReporte, BorderLayout.NORTH);
         panel.add(new JScrollPane(txtAreaReporte), BorderLayout.CENTER);
 
-        btnReporte.addActionListener(e -> {
-            if (!gestor.isLlavesCompletadas()) {
-                JOptionPane.showMessageDialog(this, "Error: Debe completar las Llaves Eliminatorias en el Módulo 5 primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
-                return;
+        btnReporte.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (!gestor.isLlavesCompletadas()) {
+                    JOptionPane.showMessageDialog(UI.this, "Error: Debe completar las Llaves Eliminatorias primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                txtAreaReporte.setText(gestor.genReporteFinal());
             }
-            txtAreaReporte.setText(gestor.genReporteFinal());
         });
 
         return panel;
     }
 
     private void actualizarTablasGrupos() {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder reporteFinal = new StringBuilder();
         EstadisticasEquipo[][] grupos = gestor.getMatrizGrupos();
         if (grupos == null) return;
 
         for (int g = 0; g < gestor.getCantidadGrupos(); g++) {
-            sb.append("=== GRUPO ").append((char) ('A' + g)).append(" ===\n");
-            sb.append(String.format("%-15s | Pts | GF | GC | DG\n", "País"));
-            sb.append("------------------------------------------\n");
+            reporteFinal.append("=== GRUPO ").append((char) ('A' + g)).append(" ===\n");
+            reporteFinal.append("País\t\t| Pts | GF | GC | DG\n");
+            reporteFinal.append("------------------------------------------\n");
             for (int e = 0; e < 4; e++) {
                 EstadisticasEquipo est = grupos[g][e];
-                sb.append(String.format("%-15s |  %2d | %2d | %2d | %2d\n",
-                        est.getEquipo().getSeleccion(), est.getPuntos(),
-                        est.getGolesFavor(), est.getGolesContra(), est.getDiferenciaGoles()));
+                // Concatenación estándar paso a paso usando tabuladores y delimitadores sencillos
+                reporteFinal.append(est.getEquipo().getSeleccion())
+                            .append("\t\t| ")
+                            .append(est.getPuntos())
+                            .append(" | ")
+                            .append(est.getGolesFavor())
+                            .append(" | ")
+                            .append(est.getGolesContra())
+                            .append(" | ")
+                            .append(est.getDiferenciaGoles())
+                            .append("\n");
             }
-            sb.append("\n");
+            reporteFinal.append("\n");
         }
-        txtAreaGrupos.setText(sb.toString());
+        txtAreaGrupos.setText(reporteFinal.toString());
     }
 }

@@ -52,7 +52,8 @@ public class EstadisticasEquipo {
     }
 
     public int getDiferenciaGoles() {
-        return golesFavor = golesContra;
+        
+    return golesFavor - golesContra;
     }
     
 }

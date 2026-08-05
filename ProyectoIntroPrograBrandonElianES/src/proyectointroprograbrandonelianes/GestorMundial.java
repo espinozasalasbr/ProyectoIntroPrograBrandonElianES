@@ -49,15 +49,18 @@ public class GestorMundial {
     
     //configuracion de tamaño inicial
     public void configurarTamano(int tamano) {
-        this.cantidadEquipos = tamano;
-        this.equipos = new Equipo[tamano];
-        this.configurado = true;
-        this.sorteoRealizado = false;
-        this.faseGruposCompletada = false;
-        this.llavesCompletadas = false;
-        this.partidosSimulados = 0;
-        this.recaudacionTotal = 0;
-        this.asistenciaTotal = 0;
+    this.cantidadEquipos = tamano;
+    this.equipos = new Equipo[tamano];
+    for (int i = 0; i < tamano; i++) {
+        this.equipos[i] = new Equipo("Equipo " + (i + 1), "DT " + (i + 1), 5);
+    }
+    this.configurado = true;
+    this.sorteoRealizado = false;
+    this.faseGruposCompletada = false;
+    this.llavesCompletadas = false;
+    this.partidosSimulados = 0;
+    this.recaudacionTotal = 0;
+    this.asistenciaTotal = 0;
     }
     
     //Generador de demo
@@ -73,7 +76,9 @@ public class GestorMundial {
         matrizGrupos = new EstadisticasEquipo[cantidadGrupos][4];
         
         Equipo[] bolsa = new Equipo[cantidadEquipos];
-        System.arraycopy(equipos, 0, bolsa, 0, cantidadEquipos);
+        for (int i = 0; i < cantidadEquipos; i++) {
+            bolsa[i] = equipos[i];
+        }
         Random random = new Random();
         for (int i = 0; i < bolsa.length; i++) {
             int aleatorio = random.nextInt(bolsa.length);
@@ -125,15 +130,15 @@ public class GestorMundial {
         StringBuilder reportTarjetas = new StringBuilder();
         if (random.nextBoolean()) {
             int ind = random.nextInt(equipo.getJugadores().length);
-            Jugador j = equipo.getJugadores()[ind];
-            j.setTarjetasAmarillas(j.getTarjetasAmarillas() + 1);
-            reportTarjetas.append("Tarjeta amarilla ").append(j.getNombre()).append(" ");
+            Jugador jugador = equipo.getJugadores()[ind];
+            jugador.setTarjetasAmarillas(jugador.getTarjetasAmarillas() + 1);
+            reportTarjetas.append("Tarjeta amarilla ").append(jugador.getNombre()).append(" ");
         }
         if (random.nextInt(8) == 0) {
             int ind = random.nextInt(equipo.getJugadores().length);
-            Jugador j = equipo.getJugadores()[ind];
-            j.setTarjetasRojas(j.getTarjetasRojas() + 1);
-            reportTarjetas.append("Tarjeta roja ").append(j.getNombre()).append(" ");
+            Jugador jugador = equipo.getJugadores()[ind];
+            jugador.setTarjetasRojas(jugador.getTarjetasRojas() + 1);
+            reportTarjetas.append("Tarjeta roja ").append(jugador.getNombre()).append(" ");
         }
         
         if (reportTarjetas.length() == 0){
@@ -219,14 +224,14 @@ public class GestorMundial {
         for (int i = 0; i < cantidadGrupos; i++) {
             for (int j = 0; j < 4; j++) {
                 if (matrizGrupos[i][j].getEquipo() == equipo) {
-                    EstadisticasEquipo est = matrizGrupos[i][j];
-                    est.setGolesFavor(est.getGolesFavor() + golFavor);
-                    est.setGolesContra(est.getGolesContra() + golContra);
+                    EstadisticasEquipo estadisticas = matrizGrupos[i][j];
+                    estadisticas.setGolesFavor(estadisticas.getGolesFavor() + golFavor);
+                    estadisticas.setGolesContra(estadisticas.getGolesContra() + golContra);
                     
                     if (golFavor > golContra) {
-                        est.setPuntos(est.getPuntos() + 3);
+                        estadisticas.setPuntos(estadisticas.getPuntos() + 3);
                     } else if (golFavor == golContra) {
-                        est.setPuntos(est.getPuntos() + 1);
+                        estadisticas.setPuntos(estadisticas.getPuntos() + 1);
                     }
                     return;
                 }
@@ -408,7 +413,7 @@ public class GestorMundial {
 
         reporteFinal.append("\n--- METRICAS FINANCIERAS Y ASISTENCIA ---\n");
         reporteFinal.append("Asistencia Total: ").append(asistenciaTotal).append(" espectadores\n");
-        reporteFinal.append("Recaudación Entradas: $").append(String.format("%.2f", recaudacionTotal)).append("\n");
+        reporteFinal.append("Recaudación Entradas: $").append((long) recaudacionTotal).append(".00\n");
 
         return reporteFinal.toString();
     }
