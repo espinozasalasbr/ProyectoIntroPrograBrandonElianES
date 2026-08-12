@@ -14,7 +14,6 @@ public class ProyectoIntroPrograBrandonElianES {
     public static void main(String[] args) {
         //interfaz gráfica Swing
         SwingUtilities.invokeLater(new Runnable() {
-        @Override
         public void run() {
             UI ventanaPrincipal = new UI();
             ventanaPrincipal.setVisible(true);

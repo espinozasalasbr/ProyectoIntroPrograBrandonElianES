@@ -14,13 +14,16 @@ import java.awt.event.ActionEvent;
  * @author espin
  */
 public class UI extends JFrame {
+    //genera el gestor
     private GestorMundial gestor;
 
-    private JComboBox<Integer> comboIndiceEquipo;
-    private JTextField txtPais, txtDT;
+    // declaramos visuales
+    private JComboBox<Integer> IndiceEquipo;
+    private JTextField modPais, modDT;
 
     private JTextArea txtAreaGrupos, txtAreaPartidos, txtAreaLlaves, txtAreaReporte;
-
+    
+    //pestañas y tamaño de la ventana
     public UI() {
         gestor = new GestorMundial();
 
@@ -38,72 +41,72 @@ public class UI extends JFrame {
 
         add(pestañas);
     }
-
+    
+    //configuracion de visuales y botones
     private JPanel ConfiguracionInicial() {
         JPanel panel = new JPanel(null);
 
         JLabel lblTamano = new JLabel("Tamaño del Torneo:");
-        lblTamano.setBounds(20, 15, 180, 25);
+        lblTamano.setBounds(150, 35, 180, 25);
         panel.add(lblTamano);
 
         Integer[] opciones = {24, 32, 48, 64};
         JComboBox<Integer> comboTamanos = new JComboBox<>(opciones);
-        comboTamanos.setBounds(180, 15, 80, 25);
+        comboTamanos.setBounds(300, 35, 80, 25);
         panel.add(comboTamanos);
 
         JButton btnAplicar = new JButton("Configurar Tamaño");
-        btnAplicar.setBounds(280, 15, 180, 25);
+        btnAplicar.setBounds(390, 35, 180, 25);
         panel.add(btnAplicar);
 
         JButton btnDemo = new JButton("Cargar Equipos Demo");
-        btnDemo.setBounds(20, 50, 440, 30);
+        btnDemo.setBounds(150, 70, 500, 30);
         panel.add(btnDemo);
 
         JLabel lblMod = new JLabel("--- Edición Manual de Entidades ---");
-        lblMod.setBounds(20, 95, 300, 25);
+        lblMod.setBounds(270, 195, 300, 25);
         panel.add(lblMod);
 
         JLabel lblSel = new JLabel("Seleccione Índice:");
-        lblSel.setBounds(20, 130, 150, 25);
+        lblSel.setBounds(150, 230, 150, 25);
         panel.add(lblSel);
 
-        comboIndiceEquipo = new JComboBox<>();
-        comboIndiceEquipo.setBounds(180, 130, 80, 25);
-        panel.add(comboIndiceEquipo);
+        IndiceEquipo = new JComboBox<>();
+        IndiceEquipo.setBounds(380, 230, 80, 25);
+        panel.add(IndiceEquipo);
 
         JLabel lblPais = new JLabel("Nombre del País:");
-        lblPais.setBounds(20, 170, 150, 25);
+        lblPais.setBounds(150, 270, 150, 25);
         panel.add(lblPais);
-        txtPais = new JTextField();
-        txtPais.setBounds(180, 170, 200, 25);
-        panel.add(txtPais);
+        modPais = new JTextField();
+        modPais.setBounds(380, 270, 200, 25);
+        panel.add(modPais);
 
         JLabel lblDT = new JLabel("Director Técnico:");
-        lblDT.setBounds(20, 210, 150, 25);
+        lblDT.setBounds(150, 310, 150, 25);
         panel.add(lblDT);
-        txtDT = new JTextField();
-        txtDT.setBounds(180, 210, 200, 25);
-        panel.add(txtDT);
+        modDT = new JTextField();
+        modDT.setBounds(380, 310, 200, 25);
+        panel.add(modDT);
 
         JButton btnGuardarEquipo = new JButton("Guardar Cambios");
-        btnGuardarEquipo.setBounds(20, 250, 360, 30);
+        btnGuardarEquipo.setBounds(150, 350, 500, 30);
         panel.add(btnGuardarEquipo);
 
         btnAplicar.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 int tamanoElegido = (int) comboTamanos.getSelectedItem();
                 gestor.configurarTamano(tamanoElegido);
-                comboIndiceEquipo.removeAllItems();
+                IndiceEquipo.removeAllItems();
                 for (int i = 0; i < tamanoElegido; i++) {
-                    comboIndiceEquipo.addItem(i);
+                    IndiceEquipo.addItem(i);
                 }
                 JOptionPane.showMessageDialog(UI.this, "Torneo dimensionado para " + tamanoElegido + " equipos.");
             }
         });
-
+        
+        //genera equipos demo
         btnDemo.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isConfigurado()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe configurar el tamaño primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -114,16 +117,16 @@ public class UI extends JFrame {
             }
         });
 
+        // modificador de equipos por indice
         btnGuardarEquipo.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
-                if (!gestor.isConfigurado() || comboIndiceEquipo.getSelectedItem() == null) {
+                if (!gestor.isConfigurado() || IndiceEquipo.getSelectedItem() == null) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Configure el torneo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                int ind = (int) comboIndiceEquipo.getSelectedItem();
-                String pais = txtPais.getText().trim();
-                String directorTecnico = txtDT.getText().trim();
+                int ind = (int) IndiceEquipo.getSelectedItem();
+                String pais = modPais.getText().trim();
+                String directorTecnico = modDT.getText().trim();
                 if (!pais.isEmpty()) gestor.getEquipos()[ind].setSeleccion(pais);
                 if (!directorTecnico.isEmpty()) gestor.getEquipos()[ind].setDirectorTecnico(directorTecnico);
                 JOptionPane.showMessageDialog(UI.this, "Entidad [" + ind + "] actualizada.");
@@ -133,6 +136,7 @@ public class UI extends JFrame {
         return panel;
     }
 
+    //genera sorteo si la config inicial fue realizada
     private JPanel GeneradorSorteo() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnSorteo = new JButton("Realizar Sorteo Aleatorio de Grupos");
@@ -142,7 +146,6 @@ public class UI extends JFrame {
         panel.add(new JScrollPane(txtAreaGrupos), BorderLayout.CENTER);
 
         btnSorteo.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isConfigurado()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar la configuracion inicial primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -157,6 +160,7 @@ public class UI extends JFrame {
         return panel;
     }
 
+    // generador de partidos
     private JPanel GeneradorPartidos() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel pnlBotones = new JPanel();
@@ -172,7 +176,6 @@ public class UI extends JFrame {
         panel.add(new JScrollPane(txtAreaPartidos), BorderLayout.CENTER);
 
         btnUnPartido.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isSorteoRealizado()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar el sorteo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -185,7 +188,6 @@ public class UI extends JFrame {
         });
 
         btnTodaFase.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isSorteoRealizado()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe realizar el sorteo primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -201,6 +203,7 @@ public class UI extends JFrame {
         return panel;
     }
 
+    //generador de clasificados
     private JPanel GeneradorClasificados() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnLlaves = new JButton("Calcular Clasificados y Simular Llaves");
@@ -211,7 +214,6 @@ public class UI extends JFrame {
         panel.add(new JScrollPane(txtAreaLlaves), BorderLayout.CENTER);
 
         btnLlaves.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isFaseGruposCompletada()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe completar la simulación de la Fase de Grupos primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -225,6 +227,7 @@ public class UI extends JFrame {
         return panel;
     }
 
+    // generador de reporte final
     private JPanel ReporteFinal() {
         JPanel panel = new JPanel(new BorderLayout());
         JButton btnReporte = new JButton("Generar Resumen Global y Estadísticas Finales");
@@ -235,7 +238,6 @@ public class UI extends JFrame {
         panel.add(new JScrollPane(txtAreaReporte), BorderLayout.CENTER);
 
         btnReporte.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!gestor.isLlavesCompletadas()) {
                     JOptionPane.showMessageDialog(UI.this, "Error: Debe completar las Llaves Eliminatorias primero.", "Error de Secuencia", JOptionPane.ERROR_MESSAGE);
@@ -248,18 +250,18 @@ public class UI extends JFrame {
         return panel;
     }
 
+    //tablas y estadisticas de grupos
     private void actualizarTablasGrupos() {
         StringBuilder reporteFinal = new StringBuilder();
         EstadisticasEquipo[][] grupos = gestor.getMatrizGrupos();
         if (grupos == null) return;
 
         for (int g = 0; g < gestor.getCantidadGrupos(); g++) {
-            reporteFinal.append("=== GRUPO ").append((char) ('A' + g)).append(" ===\n");
+            reporteFinal.append("---GRUPO ").append((char) ('A' + g)).append("---\n");
             reporteFinal.append("País\t\t| Pts | GF | GC | DG\n");
             reporteFinal.append("------------------------------------------\n");
             for (int e = 0; e < 4; e++) {
                 EstadisticasEquipo est = grupos[g][e];
-                // Concatenación estándar paso a paso usando tabuladores y delimitadores sencillos
                 reporteFinal.append(est.getEquipo().getSeleccion())
                             .append("\t\t| ")
                             .append(est.getPuntos())

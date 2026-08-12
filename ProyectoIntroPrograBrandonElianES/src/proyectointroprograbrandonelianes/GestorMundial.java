@@ -12,10 +12,8 @@ import java.util.Random;
  * @author espin
  */
 public class GestorMundial {
-    //Arreglos
+    //Arreglos de objetos
     private Equipo[] equipos;
-    private Sede[] sedes;
-    private Arbitro[] arbitros;
     private EstadisticasEquipo[][] matrizGrupos;
     private Partido[] calendarioPartidos;
     
@@ -52,21 +50,15 @@ public class GestorMundial {
     this.cantidadEquipos = tamano;
     this.equipos = new Equipo[tamano];
     for (int i = 0; i < tamano; i++) {
-        this.equipos[i] = new Equipo("Equipo " + (i + 1), "DT " + (i + 1), 5);
+        this.equipos[i] = new Equipo("Equipo " + (i + 1), "DT " + (i + 1), 11);
     }
     this.configurado = true;
-    this.sorteoRealizado = false;
-    this.faseGruposCompletada = false;
-    this.llavesCompletadas = false;
-    this.partidosSimulados = 0;
-    this.recaudacionTotal = 0;
-    this.asistenciaTotal = 0;
     }
     
     //Generador de demo
     public void genDemo() {
         for (int i = 0; i < equipos.length; i++) {
-            equipos[i] = new Equipo("Pais_"+(i+1),"DT_"+(i+1),5);
+            equipos[i] = new Equipo("Pais_"+(i+1),"DT_"+(i+1),11);
         }
     }
     
@@ -93,7 +85,7 @@ public class GestorMundial {
                 matrizGrupos[j][h] = new EstadisticasEquipo(bolsa[ind++]);
             }
         }
-
+        // calendario
         int totalPartidos = cantidadGrupos*6;
         calendarioPartidos = new Partido[totalPartidos];
         int posPartido = 0;
@@ -149,7 +141,7 @@ public class GestorMundial {
     }
     
     //ordena grupos
-    private boolean esMejor(EstadisticasEquipo equipo1, EstadisticasEquipo equipo2) {
+    private boolean masPuntos(EstadisticasEquipo equipo1, EstadisticasEquipo equipo2) {
         if (equipo1.getPuntos() != equipo2.getPuntos()) return equipo1.getPuntos() > equipo2.getPuntos();
         return equipo1.getDiferenciaGoles() > equipo2.getDiferenciaGoles();
     }
@@ -157,7 +149,7 @@ public class GestorMundial {
     private void ordenarGrupo(EstadisticasEquipo[] grupo) {
         for (int i = 0; i < grupo.length - 1; i++) {
             for (int j = 0; j < grupo.length - i - 1; j++) {
-                if (esMejor(grupo[j + 1], grupo[j])) {
+                if (masPuntos(grupo[j + 1], grupo[j])) {
                     EstadisticasEquipo temp = grupo[j];
                     grupo[j] = grupo[j + 1];
                     grupo[j + 1] = temp;
@@ -170,7 +162,7 @@ public class GestorMundial {
     public String simuladorPartido() {
         if (faseGruposCompletada || partidosSimulados >= calendarioPartidos.length) {
             faseGruposCompletada = true;
-            return ">> La Fase de Grupos ya ha finalizado por completo.";
+            return "La Fase de Grupos ya ha finalizado por completo.";
         }
 
         Partido partido = calendarioPartidos[partidosSimulados];
@@ -267,7 +259,7 @@ public class GestorMundial {
 
             for (int i = 0; i < terceros.length - 1; i++) {
                 for (int j = 0; j < terceros.length - i - 1; j++) {
-                    if (esMejor(terceros[j + 1], terceros[j])) {
+                    if (masPuntos(terceros[j + 1], terceros[j])) {
                         EstadisticasEquipo temp = terceros[j];
                         terceros[j] = terceros[j + 1];
                         terceros[j + 1] = temp;
@@ -280,14 +272,14 @@ public class GestorMundial {
             }
         }
 
-        StringBuilder reporteLlaves = new StringBuilder("=== ÁRBOL DE LLAVES (BRACKETS) ===\n\n");
+        StringBuilder reporteLlaves = new StringBuilder("---ÁRBOL DE LLAVES---\n\n");
         Equipo[] rondaActual = participantesLlaves;
         Random random = new Random();
 
         while (rondaActual.length > 1) {
             reporteLlaves.append("--- RONDA DE ").append(rondaActual.length).append(" EQUIPOS ---\n");
             Equipo[] siguienteRonda = new Equipo[rondaActual.length / 2];
-
+            // goles
             for (int i = 0; i < rondaActual.length; i += 2) {
                 Equipo equipo1 = rondaActual[i];
                 Equipo equipo2 = rondaActual[i + 1];
@@ -321,13 +313,13 @@ public class GestorMundial {
                         perdedor = equipo1;
                     }
                 }
-
+                // ganador
                 siguienteRonda[i/2] = ganador;
                 reporteLlaves.append(equipo1.getSeleccion()).append(" ").append(gol1).append(" - ")
                          .append(gol2).append(" ").append(equipo2.getSeleccion())
-                         .append(infoPenales).append(" --> Clasifica: ")
+                         .append(infoPenales).append("Clasifica: ")
                          .append(ganador.getSeleccion()).append("\n");
-
+                // define campeon en la ultima ronda
                 if (rondaActual.length == 2) {
                     campeon = ganador;
                     subcampeon = perdedor;
@@ -344,9 +336,9 @@ public class GestorMundial {
         return reporteLlaves.toString();
     }
     
-    //generador reporte final
+    //generador reporte jugadores
     private Jugador[] todosLosJugadores() {
-        Jugador[] lista = new Jugador[cantidadEquipos * 5];
+        Jugador[] lista = new Jugador[cantidadEquipos * 11];
         int ind = 0;
         for (int i = 0; i < cantidadEquipos; i++) {
             Jugador[] plantilla = equipos[i].getJugadores();
@@ -357,33 +349,40 @@ public class GestorMundial {
         return lista;
     }
 
-    private void jugadoresPorGoles(Jugador[] jugadoresPorGoles) {
-        for (int i = 0; i < jugadoresPorGoles.length - 1; i++) {
-            for (int j = 0; j < jugadoresPorGoles.length - i - 1; j++) {
-                if (jugadoresPorGoles[j].getGoles() < jugadoresPorGoles[j + 1].getGoles()) {
-                    Jugador temp = jugadoresPorGoles[j];
-                    jugadoresPorGoles[j] = jugadoresPorGoles[j + 1];
-                    jugadoresPorGoles[j + 1] = temp;
+    //ordena jugadores por goles
+    private void jugadoresPorGoles(Jugador[] lista) {
+        int n = lista.length;
+        for (int i = 0; i < n - 1; i++) {
+            for (int f = i + 1; f < n; f++) {
+                if (lista[f].getGoles() > lista[i].getGoles()) {
+                    Jugador temp = lista[i];
+                    lista[i] = lista[f];
+                    lista[f] = temp;
                 }
             }
         }
     }
 
-    private void jugadoresPorTarjetas(Jugador[] jugadoresPorTarjetas) {
-        for (int i = 0; i < jugadoresPorTarjetas.length - 1; i++) {
-            for (int j = 0; j < jugadoresPorTarjetas.length - i - 1; j++) {
-                if (jugadoresPorTarjetas[j].getTotalIncidencias() < jugadoresPorTarjetas[j + 1].getTotalIncidencias()) {
-                    Jugador temp = jugadoresPorTarjetas[j];
-                    jugadoresPorTarjetas[j] = jugadoresPorTarjetas[j + 1];
-                    jugadoresPorTarjetas[j + 1] = temp;
+    //ordena jugadores por tarjeta
+    private void jugadoresPorTarjetas(Jugador[] lista) {
+        boolean intercam;
+        do {
+            intercam = false;
+            for (int i = 0; i < lista.length - 1; i++) {
+                if (lista[i].getTotalIncidencias() < lista[i + 1].getTotalIncidencias()) {
+                    Jugador temp = lista[i];
+                    lista[i] = lista[i + 1];
+                    lista[i + 1] = temp;
+                    intercam = true;
                 }
             }
-        }
+        } while (intercam);
     }
     
+    //genera reporte final
     public String genReporteFinal() {
         StringBuilder reporteFinal = new StringBuilder();
-        reporteFinal.append("=== RESUMEN GLOBAL Y ESTADÍSTICAS FINALES ===\n\n");
+        reporteFinal.append("---RESUMEN GLOBAL Y ESTADÍSTICAS FINALES---\n\n");
         reporteFinal.append("CAMPEÓN: ").append(campeon.getSeleccion()).append("\n");
         reporteFinal.append("SUBCAMPEÓN: ").append(subcampeon.getSeleccion()).append("\n\n");
 
@@ -429,22 +428,6 @@ public class GestorMundial {
 
     public void setEquipos(Equipo[] equipos) {
         this.equipos = equipos;
-    }
-
-    public Sede[] getSedes() {
-        return sedes;
-    }
-
-    public void setSedes(Sede[] sedes) {
-        this.sedes = sedes;
-    }
-
-    public Arbitro[] getArbitros() {
-        return arbitros;
-    }
-
-    public void setArbitros(Arbitro[] arbitros) {
-        this.arbitros = arbitros;
     }
 
     public int getCantidadEquipos() {
