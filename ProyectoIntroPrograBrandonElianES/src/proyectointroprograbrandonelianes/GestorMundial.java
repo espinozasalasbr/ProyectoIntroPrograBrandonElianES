@@ -316,8 +316,8 @@ public class GestorMundial {
                 // ganador
                 siguienteRonda[i/2] = ganador;
                 reporteLlaves.append(equipo1.getSeleccion()).append(" ").append(gol1).append(" - ")
-                         .append(gol2).append(" ").append(equipo2.getSeleccion())
-                         .append(infoPenales).append("Clasifica: ")
+                         .append(gol2).append(" ").append(equipo2.getSeleccion()).append("      ")
+                         .append(infoPenales).append("  ---Clasifica: ")
                          .append(ganador.getSeleccion()).append("\n");
                 // define campeon en la ultima ronda
                 if (rondaActual.length == 2) {
